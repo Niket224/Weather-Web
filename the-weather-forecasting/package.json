@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "A modern weather forecasting application built with React",
   "author": "Niket Kumar",
-  "homepage": ".",
   "dependencies": {
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
