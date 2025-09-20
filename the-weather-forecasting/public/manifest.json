@@ -1,6 +1,11 @@
 {
   "short_name": "My Weather App",
   "name": "My Weather Forecasting App",
+  "author": "Niket Kumar",
+  "developer": {
+    "name": "Niket Kumar",
+    "url": "https://github.com/Niket224"
+  },
   "icons": [
     {
       "src": "favicon.ico",
@@ -11,5 +16,6 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "description": "A modern weather forecasting application by Niket Kumar"
 }
