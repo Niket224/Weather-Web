@@ -58,17 +58,20 @@ export async function fetchCities(input) {
 
     const data = await response.json();
     
+    // Debug: log the actual API response
+    console.log('API Response:', data);
+    
     // Transform to match expected format
     return {
       data: data.results ? data.results.map(city => ({
-        city: city.name,
-        country: city.country,
-        latitude: city.latitude,
-        longitude: city.longitude
+        city: city.name || city.city || 'Unknown City',
+        country: city.country || city.country_code || 'Unknown Country',
+        latitude: city.latitude || city.lat || 0,
+        longitude: city.longitude || city.lon || 0
       })) : []
     };
   } catch (error) {
-    console.log(error);
+    console.log('Error fetching cities:', error);
     return { data: [] };
   }
 }
