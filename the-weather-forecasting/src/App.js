@@ -25,17 +25,38 @@ function App() {
   const [error, setError] = useState(false);
 
   const searchChangeHandler = async (enteredData) => {
+    console.log('🔍 Search triggered with:', enteredData);
+    
+    if (!enteredData || !enteredData.value) {
+      console.error('❌ No data entered');
+      return;
+    }
+
     const [latitude, longitude] = enteredData.value.split(' ');
+    console.log('📍 Coordinates:', { latitude, longitude });
 
     setIsLoading(true);
+    setError(false);
 
     const currentDate = transformDateFormat();
     const date = new Date();
     let dt_now = Math.floor(date.getTime() / 1000);
 
+    console.log('📅 Current date/time:', { currentDate, dt_now });
+
     try {
-      const [todayWeatherResponse, weekForecastResponse] =
-        await fetchWeatherData(latitude, longitude);
+      console.log('🌐 Fetching weather data...');
+      const [todayWeatherResponse, weekForecastResponse] = await fetchWeatherData(latitude, longitude);
+      
+      console.log('🌤️ Weather Response:', todayWeatherResponse);
+      console.log('📊 Forecast Response:', weekForecastResponse);
+
+      // Check if we got valid responses
+      if (!todayWeatherResponse || !weekForecastResponse) {
+        throw new Error('Invalid API response');
+      }
+
+      console.log('🔄 Processing forecast data...');
       const all_today_forecasts_list = getTodayForecastWeather(
         weekForecastResponse,
         currentDate,
@@ -47,13 +68,23 @@ function App() {
         ALL_DESCRIPTIONS
       );
 
+      console.log('📋 Today forecasts:', all_today_forecasts_list);
+      console.log('📅 Week forecasts:', all_week_forecasts_list);
+
       setTodayForecast([...all_today_forecasts_list]);
       setTodayWeather({ city: enteredData.label, ...todayWeatherResponse });
       setWeekForecast({
         city: enteredData.label,
         list: all_week_forecasts_list,
       });
+
+      console.log('✅ All data set successfully');
     } catch (error) {
+      console.error('❌ Error in searchChangeHandler:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        stack: error.stack
+      });
       setError(true);
     }
 
@@ -113,11 +144,18 @@ function App() {
 
   if (error) {
     appContent = (
-      <ErrorBox
-        margin="3rem auto"
-        flex="inherit"
-        errorMessage="Something went wrong"
-      />
+      <>
+        <ErrorBox
+          margin="3rem auto"
+          flex="inherit"
+          errorMessage="Something went wrong - Check browser console for details"
+        />
+        <Box sx={{ color: 'white', textAlign: 'center', mt: 2 }}>
+          <Typography>
+            Open browser console (F12) to see detailed error information
+          </Typography>
+        </Box>
+      </>
     );
   }
 

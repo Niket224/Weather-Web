@@ -34,7 +34,7 @@ export function getMostFrequentWeather(arr) {
 
 export const descriptionToIconName = (desc, descriptions_list) => {
   let iconName = descriptions_list.find((item) => item.description === desc);
-  return iconName.icon || 'unknown';
+  return iconName ? iconName.icon : 'unknown.png';
 };
 
 export const getWeekForecastWeather = (response, descriptions_list) => {
@@ -43,29 +43,39 @@ export const getWeekForecastWeather = (response, descriptions_list) => {
 
   if (!response || Object.keys(response).length === 0 || response.cod === '404')
     return [];
-  else
-    response?.list.slice().map((item, idx) => {
-      descriptions_data.push({
-        description: item.weather[0].description,
-        date: item.dt_txt.substring(0, 10),
-      });
-      foreacast_data.push({
-        date: item.dt_txt.substring(0, 10),
-        temp: item.main.temp,
-        humidity: item.main.humidity,
-        wind: item.wind.speed,
-        clouds: item.clouds.all,
-      });
+    
+  if (!response.list || response.list.length === 0) {
+    return [];
+  }
 
-      return { idx, item };
+  response.list.slice().map((item, idx) => {
+    // Safe property access
+    const weather = item.weather && item.weather[0] ? item.weather[0] : { description: 'clear sky' };
+    const main = item.main || {};
+    const wind = item.wind || { speed: 0 };
+    const clouds = item.clouds || { all: 0 };
+    
+    descriptions_data.push({
+      description: weather.description,
+      date: item.dt_txt ? item.dt_txt.substring(0, 10) : new Date().toISOString().substring(0, 10),
     });
+    
+    foreacast_data.push({
+      date: item.dt_txt ? item.dt_txt.substring(0, 10) : new Date().toISOString().substring(0, 10),
+      temp: main.temp || main.temp_max || 0,
+      humidity: main.humidity || 65,
+      wind: wind.speed || 0,
+      clouds: clouds.all || 0,
+    });
+
+    return { idx, item };
+  });
 
   const groupByDate = groupBy('date');
   let grouped_forecast_data = groupByDate(foreacast_data);
   let grouped_forecast_descriptions = groupByDate(descriptions_data);
 
   const description_keys = Object.keys(grouped_forecast_descriptions);
-
   let dayDescList = [];
 
   description_keys.forEach((key) => {
@@ -92,19 +102,25 @@ export const getWeekForecastWeather = (response, descriptions_list) => {
       dayCloudsList.push(grouped_forecast_data[key][i].clouds);
     }
 
+    const description = dayDescList[idx] || 'clear sky';
+    let iconName = descriptions_list.find((item) => item.description === description);
+    const icon = iconName ? iconName.icon : '01d.png';
+
     dayAvgsList.push({
       date: key,
       temp: getAverage(dayTempsList),
       humidity: getAverage(dayHumidityList),
       wind: getAverage(dayWindList, false),
       clouds: getAverage(dayCloudsList),
-      description: dayDescList[idx],
-      icon: descriptionToIconName(dayDescList[idx], descriptions_list),
+      description: description,
+      icon: icon,
     });
   });
 
   return dayAvgsList;
 };
+
+ 
 
 export const getTodayForecastWeather = (
   response,
